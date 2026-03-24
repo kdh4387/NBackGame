@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>마법 앱</title>
+<style>
+:root {
+  --teal:#4ECDC4; --teal-light:#a8edea; --bg:#f0f4f8;
+  --white:#fff; --gray:#c0c8d0; --gray-dark:#7a8a9a; --text:#2d3a45;
+  --inactive:#dde3e9; --shadow:0 4px 16px rgba(78,205,196,0.13);
+  --blue:#4a90d9; --blue-light:#d0e8f8; --red:#d94a4a; --red-light:#f8d0d0;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;height:100%;background:var(--bg);font-family:'Apple SD Gothic Neo','Noto Sans KR',sans-serif;overflow:hidden;color:var(--text);}
+.screen{display:none;width:100%;height:100%;}
+.screen.active{display:flex;}
+
+/* ===== HOME ===== */
+#homeScreen{flex-direction:column;align-items:center;justify-content:center;gap:36px;background:linear-gradient(135deg,#e8f8f7 0%,#f0f4f8 100%);}
+.home-title{font-size:26px;font-weight:800;color:var(--text);letter-spacing:-1px;text-align:center;}
+.home-btns{display:flex;gap:24px;}
+.home-btn{
+  width:160px;height:160px;border-radius:24px;border:none;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  font-size:18px;font-weight:700;cursor:pointer;
+  box-shadow:var(--shadow);transition:transform 0.13s,box-shadow 0.13s;
+}
+.home-btn.magic{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;}
+.home-btn.shape{background:linear-gradient(135deg,#4ECDC4,#2eb8ae);color:#fff;}
+.home-btn:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,0.15);}
+.home-btn:active{transform:scale(0.97);}
+.home-btn-icon{font-size:48px;line-height:1;}
+
+/* ===== MAGIC START ===== */
+#magicStartScreen{flex-direction:column;align-items:center;justify-content:center;gap:32px;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);}
+.magic-title{font-size:28px;font-weight:800;color:#fff;letter-spacing:-1px;}
+.magic-desc{font-size:14px;color:rgba(255,255,255,0.6);text-align:center;line-height:1.8;max-width:400px;}
+.magic-start-btn{
+  background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;
+  border:none;border-radius:18px;padding:18px 56px;
+  font-size:20px;font-weight:700;cursor:pointer;
+  box-shadow:0 8px 24px rgba(102,126,234,0.4);
+  transition:transform 0.13s;
+}
+.magic-start-btn:hover{transform:translateY(-2px);}
+.magic-start-btn:active{transform:scale(0.97);}
+.exit-top{
+  position:absolute;top:14px;left:14px;
+  background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);
+  border-radius:10px;padding:7px 16px;font-size:13px;font-weight:600;color:rgba(255,255,255,0.8);
+  cursor:pointer;transition:background 0.13s;
+}
+.exit-top:hover{background:rgba(255,100,100,0.3);}
+.exit-top.dark{background:var(--white);border:1.5px solid var(--gray);color:var(--gray-dark);}
+.exit-top.dark:hover{background:#ffe0e0;border-color:#f08080;color:#c0392b;}
+
+/* ===== MAGIC GAME ===== */
+#magicGameScreen{flex-direction:row;height:100%;background:#f8f6ff;}
+
+/* LEFT cards area */
+.magic-left{
+  width:340px;min-width:280px;
+  display:flex;flex-direction:column;
+  padding:14px;gap:10px;
+  background:#fff;border-right:1.5px solid #e0e8ef;
+  position:relative;
+}
+.magic-left-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.turn-label{font-size:13px;font-weight:700;color:var(--teal);}
+.cards-grid{
+  display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;
+  gap:10px;flex:1;
+}
+.card{
+  border-radius:14px;cursor:pointer;overflow:hidden;
+  border:2.5px solid transparent;
+  transition:transform 0.15s,border-color 0.15s,box-shadow 0.15s;
+  position:relative;background:#e8e8e8;
+  display:flex;align-items:center;justify-content:center;
+}
+.card:hover{transform:scale(1.03);box-shadow:0 6px 18px rgba(0,0,0,0.12);}
+.card.flipped{border-color:var(--teal);background:#f0fffe;}
+.card-back{width:100%;height:100%;display:flex;align-items:center;justify-content:center;}
+.card-front{width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:8px;}
+.card-front img,.card-front svg{max-width:100%;max-height:100%;object-fit:contain;}
+/* card back pattern */
+.card-back-inner{
+  width:85%;height:85%;border-radius:10px;
+  background:linear-gradient(135deg,#b0b8c8,#8090a8);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:inset 0 2px 6px rgba(0,0,0,0.2);
+}
+.card-back-oval{
+  width:55%;height:32%;border-radius:50%;
+  background:rgba(255,255,255,0.25);
+}
+
+.magic-bottom{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 4px 0 4px;gap:8px;
+}
+.done-btn{
+  background:var(--teal);color:#fff;border:none;border-radius:12px;
+  padding:10px 22px;font-size:15px;font-weight:700;cursor:default;
+  opacity:0.35;pointer-events:none;transition:opacity 0.2s;
+}
+.done-btn.enabled{opacity:1;pointer-events:auto;cursor:pointer;}
+.done-btn.enabled:hover{opacity:0.85;}
+
+.potion-preview{display:flex;gap:12px;align-items:center;}
+.potion-icon{
+  width:52px;height:52px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--inactive);border:2px solid transparent;
+  transition:background 0.2s,border-color 0.2s;font-size:28px;
+}
+.potion-icon.predicted.blue{background:var(--blue-light);border-color:var(--blue);}
+.potion-icon.predicted.red{background:var(--red-light);border-color:var(--red);}
+
+/* RIGHT choice area */
+.magic-right{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:24px;
+  padding:20px;
+}
+.choice-prompt{font-size:15px;font-weight:700;color:var(--gray-dark);text-align:center;}
+.potion-choices{display:flex;gap:24px;}
+.potion-choice-btn{
+  width:110px;height:130px;border-radius:18px;border:3px solid transparent;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  font-size:16px;font-weight:700;cursor:default;
+  background:var(--inactive);color:var(--gray-dark);
+  transition:background 0.2s,border-color 0.2s,transform 0.13s;
+  pointer-events:none;opacity:0.4;
+}
+.potion-choice-btn.enabled{pointer-events:auto;cursor:pointer;opacity:1;}
+.potion-choice-btn.enabled:hover{transform:scale(1.05);}
+.potion-choice-btn.blue.enabled{background:var(--blue-light);border-color:var(--blue);color:var(--blue);}
+.potion-choice-btn.red.enabled{background:var(--red-light);border-color:var(--red);color:var(--red);}
+.potion-choice-btn svg{width:56px;height:56px;}
+
+/* ===== SHAPE START ===== */
+#shapeStartScreen{flex-direction:column;align-items:center;justify-content:center;gap:32px;background:linear-gradient(135deg,#e8f8f7 0%,#f0f4f8 100%);position:relative;}
+.shape-title{font-size:28px;font-weight:800;color:var(--text);letter-spacing:-1px;}
+.shape-desc{font-size:14px;color:var(--gray-dark);text-align:center;line-height:1.8;}
+
+/* ===== SHAPE GAME ===== */
+#shapeGameScreen{flex-direction:row;height:100%;}
+.left-panel{width:220px;min-width:170px;background:var(--white);border-right:1.5px solid #e0e8ef;display:flex;flex-direction:column;align-items:center;padding:12px 8px;gap:8px;overflow-y:auto;}
+.panel-title{font-size:12px;font-weight:700;color:var(--gray-dark);letter-spacing:1px;margin-bottom:4px;align-self:flex-start;padding-left:4px;}
+.shape-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;width:100%;}
+.shape-item{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:10px;cursor:pointer;border:2.5px solid transparent;background:var(--bg);transition:border-color 0.15s,background 0.15s,transform 0.1s;padding:6px;}
+.shape-item:hover{background:var(--teal-light);transform:scale(1.06);}
+.shape-item.blocked{opacity:0.4;pointer-events:none;}
+.shape-item svg{width:100%;height:100%;}
+.mini-shape-list{display:flex;flex-direction:column;gap:10px;width:100%;padding:4px;}
+.mini-shape-item{display:flex;align-items:center;justify-content:center;height:60px;border-radius:12px;cursor:pointer;border:2.5px solid transparent;background:var(--bg);transition:border-color 0.15s,background 0.15s;padding:8px;}
+.mini-shape-item:hover{background:var(--teal-light);}
+.mini-shape-item.blocked{opacity:0.4;pointer-events:none;}
+.mini-shape-item svg{width:44px;height:44px;}
+.main-area{flex:1;display:flex;flex-direction:column;position:relative;overflow:hidden;}
+.top-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 18px 0 14px;min-height:44px;}
+.round-label{font-size:14px;font-weight:700;color:var(--teal);}
+.step-counter{font-size:13px;color:var(--gray-dark);}
+.shape-display{flex:1;display:flex;align-items:center;justify-content:center;}
+.current-shape-wrap{width:160px;height:160px;display:flex;align-items:center;justify-content:center;border-radius:28px;background:var(--white);box-shadow:var(--shadow);}
+.empty-hint{font-size:14px;color:var(--gray);text-align:center;line-height:1.8;}
+.next-btn-wrap{display:flex;justify-content:flex-end;padding:0 14px 14px 0;}
+.next-btn{background:var(--teal);color:#fff;border:none;border-radius:14px;padding:12px 28px;font-size:16px;font-weight:700;cursor:default;opacity:0.35;pointer-events:none;transition:opacity 0.2s,transform 0.1s;box-shadow:var(--shadow);}
+.next-btn.enabled{opacity:1;pointer-events:auto;cursor:pointer;}
+.next-btn.enabled:hover{transform:translateY(-2px);}
+.next-btn.enabled:active{transform:scale(0.97);}
+.right-panel{width:200px;min-width:160px;display:flex;flex-direction:column;align-items:stretch;justify-content:center;padding:12px 14px;gap:14px;border-left:1.5px solid #e0e8ef;background:var(--white);}
+.choice-item{display:flex;align-items:center;gap:10px;border-radius:14px;padding:10px 14px;background:var(--inactive);border:2px solid transparent;transition:background 0.15s,border-color 0.15s;min-height:52px;}
+.choice-item.lit{background:var(--teal-light);border-color:var(--teal);}
+.choice-item.disabled{opacity:0.35;}
+.choice-key{height:32px;background:var(--white);border:1.5px solid var(--gray);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--text);flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,0.07);padding:0 8px;}
+.choice-label{font-size:13px;color:var(--gray-dark);font-weight:600;line-height:1.3;}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);align-items:center;justify-content:center;z-index:200;}
+.modal-overlay.show{display:flex;}
+.modal-box{background:var(--white);border-radius:20px;padding:32px 36px;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.18);max-width:340px;width:90%;}
+.modal-box h3{font-size:18px;font-weight:800;margin-bottom:10px;}
+.modal-box p{font-size:14px;color:var(--gray-dark);margin-bottom:24px;}
+.modal-btns{display:flex;flex-direction:column;gap:10px;}
+.modal-btn{padding:11px 20px;border-radius:12px;border:none;font-size:15px;font-weight:700;cursor:pointer;transition:transform 0.1s;}
+.modal-btn:active{transform:scale(0.96);}
+.modal-btn.cancel{background:var(--inactive);color:var(--gray-dark);}
+.modal-btn.go-home{background:var(--teal);color:#fff;}
+.modal-btn.go-back{background:#fff;color:var(--text);border:1.5px solid var(--gray);}
+
+@keyframes shapeIn{from{opacity:0;transform:scale(0.82);}to{opacity:1;transform:scale(1);}}
+.shape-animate{animation:shapeIn 0.22s cubic-bezier(.34,1.56,.64,1) both;}
+@keyframes cardFlip{from{transform:rotateY(90deg);}to{transform:rotateY(0deg);}}
+.card-flip{animation:cardFlip 0.2s ease-out both;}
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div class="screen active" id="homeScreen">
+  <div class="home-title">🌟 마법 훈련소</div>
+  <div class="home-btns">
+    <button class="home-btn magic" onclick="showMagicStart()">
+      <span class="home-btn-icon">🧪</span>
+      마법약 만들기
+    </button>
+    <button class="home-btn shape" onclick="showShapeStart()">
+      <span class="home-btn-icon">🔷</span>
+      도형 기억 게임
+    </button>
+  </div>
+</div>
+
+<!-- MAGIC START -->
+<div class="screen" id="magicStartScreen">
+  <button class="exit-top" onclick="showExitModal('magicStart')">✕ 종료</button>
+  <div class="magic-title">🧪 마법약 만들기</div>
+  <div class="magic-desc">
+    모든 조합의 개수는 14가지!<br>
+    재료 카드는 한 장부터 세 장까지 제시됩니다.<br>
+    초반은 확률 파악이 관건!
+  </div>
+  <button class="magic-start-btn" onclick="startMagicGame()">시작</button>
+</div>
+
+<!-- MAGIC GAME -->
+<div class="screen" id="magicGameScreen">
+  <div class="magic-left">
+    <div class="magic-left-top">
+      <button class="exit-top dark" onclick="showExitModal('magicGame')">✕ 종료</button>
+      <div class="turn-label" id="magicTurnLabel">1번째</div>
+    </div>
+    <div class="cards-grid" id="cardsGrid"></div>
+    <div class="magic-bottom">
+      <button class="done-btn" id="doneBtn" onclick="onDone()">완료</button>
+      <div class="potion-preview">
+        <div class="potion-icon" id="predictBlue" title="파란약">
+          <svg viewBox="0 0 60 80" width="36" height="36"><g opacity="0.5" id="blueFlask">
+            <ellipse cx="30" cy="62" rx="20" ry="14" fill="#4a90d9"/>
+            <rect x="22" y="20" width="16" height="30" rx="3" fill="#4a90d9"/>
+            <rect x="24" y="10" width="12" height="12" rx="3" fill="#8ab4d4"/>
+            <ellipse cx="30" cy="62" rx="14" ry="8" fill="#6aaee8" opacity="0.5"/>
+          </g></svg>
+        </div>
+        <div class="potion-icon" id="predictRed" title="빨간약">
+          <svg viewBox="0 0 60 80" width="36" height="36"><g opacity="0.5" id="redFlask">
+            <ellipse cx="30" cy="62" rx="20" ry="14" fill="#d94a4a"/>
+            <rect x="22" y="20" width="16" height="30" rx="3" fill="#d94a4a"/>
+            <rect x="24" y="10" width="12" height="12" rx="3" fill="#d48a8a"/>
+            <ellipse cx="30" cy="62" rx="14" ry="8" fill="#e86a6a" opacity="0.5"/>
+          </g></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="magic-right">
+    <div class="choice-prompt" id="choicePrompt">완료를 누르면 선택할 수 있습니다</div>
+    <div class="potion-choices">
+      <button class="potion-choice-btn blue" id="choiceBlue" onclick="onChoosePotion('blue')">
+        <svg viewBox="0 0 60 80" width="56" height="56">
+          <ellipse cx="30" cy="62" rx="20" ry="14" fill="#4a90d9"/>
+          <rect x="22" y="20" width="16" height="30" rx="3" fill="#4a90d9"/>
+          <rect x="24" y="10" width="12" height="12" rx="3" fill="#8ab4d4"/>
+          <ellipse cx="22" cy="52" rx="5" ry="3" fill="#fff" opacity="0.3"/>
+        </svg>
+        파란약
+      </button>
+      <button class="potion-choice-btn red" id="choiceRed" onclick="onChoosePotion('red')">
+        <svg viewBox="0 0 60 80" width="56" height="56">
+          <ellipse cx="30" cy="62" rx="20" ry="14" fill="#d94a4a"/>
+          <rect x="22" y="20" width="16" height="30" rx="3" fill="#d94a4a"/>
+          <rect x="24" y="10" width="12" height="12" rx="3" fill="#d48a8a"/>
+          <ellipse cx="22" cy="52" rx="5" ry="3" fill="#fff" opacity="0.3"/>
+        </svg>
+        빨간약
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- SHAPE START -->
+<div class="screen" id="shapeStartScreen">
+  <button class="exit-top dark" onclick="showExitModal('shapeStart')">✕ 종료</button>
+  <div class="shape-title">🔷 도형 기억 게임</div>
+  <div class="shape-desc">제시된 도형의 순서를 기억하세요</div>
+  <div class="round-btns" style="display:flex;gap:20px;">
+    <button class="home-btn shape" style="width:130px;height:100px;font-size:16px;" onclick="startShapeGame(1)">1라운드</button>
+    <button class="home-btn shape" style="width:130px;height:100px;font-size:16px;background:linear-gradient(135deg,#fff,#e8f8f7);color:var(--teal);border:2.5px solid var(--teal);" onclick="startShapeGame(2)">2라운드</button>
+  </div>
+</div>
+
+<!-- SHAPE GAME -->
+<div class="screen" id="shapeGameScreen">
+  <div class="left-panel" id="leftPanel">
+    <div class="panel-title">도형 선택</div>
+    <div id="shapeSelector"></div>
+  </div>
+  <div class="main-area">
+    <div class="top-bar">
+      <button class="exit-top dark" onclick="showExitModal('shapeGame')">✕ 종료</button>
+      <div class="round-label" id="roundLabel">1라운드</div>
+      <div class="step-counter" id="stepCounter"></div>
+    </div>
+    <div class="shape-display">
+      <div class="current-shape-wrap" id="currentShapeWrap">
+        <div class="empty-hint" id="emptyHint">왼쪽에서<br>도형을 선택하세요</div>
+        <svg id="currentShapeSVG" viewBox="0 0 100 100" style="display:none;width:110px;height:110px;"></svg>
+      </div>
+    </div>
+    <div class="next-btn-wrap">
+      <button class="next-btn" id="nextBtn" onclick="shapeGoNext()">다음 ▶</button>
+    </div>
+  </div>
+  <div class="right-panel" id="rightPanel"></div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="exitModal">
+  <div class="modal-box">
+    <h3>종료</h3>
+    <p id="modalMsg">어떻게 하시겠습니까?</p>
+    <div class="modal-btns" id="modalBtns"></div>
+  </div>
+</div>
+
+<script>
+// =====================================================================
+// SHAPES
+// =====================================================================
+const SHAPES = [
+  { id:'triangle',  svg:`<polygon points="50,8 96,92 4,92" fill="#4ECDC4"/>` },
+  { id:'circle',    svg:`<circle cx="50" cy="50" r="44" fill="#4ECDC4"/>` },
+  { id:'square',    svg:`<rect x="6" y="6" width="88" height="88" fill="#4ECDC4"/>` },
+  // 4: 사다리꼴 (아래가 넓은)
+  { id:'trapezoid', svg:`<polygon points="10,85 90,85 75,15 25,15" fill="#4ECDC4"/>` },
+  // 5: 모래시계 (위아래 삼각형)
+  { id:'hourglass', svg:`<polygon points="10,5 90,5 50,50" fill="#4ECDC4"/><polygon points="10,95 90,95 50,50" fill="#4ECDC4"/>` },
+  // 6: 다이아몬드 보석형 (육각형 위아래)
+  { id:'gem',       svg:`<polygon points="30,5 70,5 95,35 95,65 70,95 30,95 5,65 5,35" fill="#4ECDC4"/>` },
+  // 7: 다이아몬드 (마름모)
+  { id:'diamond',   svg:`<polygon points="50,5 95,50 50,95 5,50" fill="#4ECDC4"/>` },
+  // 8: 누운 모래시계 (나비넥타이)
+  { id:'bowtie',    svg:`<polygon points="5,10 50,50 5,90" fill="#4ECDC4"/><polygon points="95,10 50,50 95,90" fill="#4ECDC4"/>` },
+  { id:'star',      svg:`<polygon points="50,5 61,35 95,35 68,57 79,91 50,70 21,91 32,57 5,35 39,35" fill="#4ECDC4"/>` },
+  // 10: 퍼즐(체커)
+  { id:'puzzle',    svg:`<rect x="5" y="5" width="44" height="44" fill="#4ECDC4"/><rect x="51" y="51" width="44" height="44" fill="#4ECDC4"/>` },
+  // 11: 고드름 2개 (아래로 뾰족한 삼각형 2개)
+  { id:'icicles',   svg:`<polygon points="18,5 36,5 27,95" fill="#4ECDC4"/><polygon points="64,5 82,5 73,95" fill="#4ECDC4"/>` },
+  // 12: 계단형 피라미드
+  { id:'pyramid',   svg:`<rect x="22" y="72" width="56" height="20" fill="#4ECDC4"/><rect x="30" y="52" width="40" height="22" fill="#4ECDC4"/><rect x="36" y="33" width="28" height="21" fill="#4ECDC4"/><rect x="40" y="15" width="20" height="20" fill="#4ECDC4"/>` },
+  // 13: 이중삼각 (위아래 삼각형 겹침)
+  { id:'doubletri', svg:`<polygon points="50,5 95,52 5,52" fill="#4ECDC4"/><polygon points="50,48 95,95 5,95" fill="#4ECDC4"/>` },
+  // 14: 네 잎 꽃 (타원 4개)
+  { id:'flower',    svg:`<ellipse cx="50" cy="22" rx="14" ry="20" fill="#4ECDC4"/><ellipse cx="50" cy="78" rx="14" ry="20" fill="#4ECDC4"/><ellipse cx="22" cy="50" rx="20" ry="14" fill="#4ECDC4"/><ellipse cx="78" cy="50" rx="20" ry="14" fill="#4ECDC4"/>` },
+  // 15: 중첩된 긴 마름모 3개
+  { id:'tridiamonds',svg:`<polygon points="50,5 65,50 50,95 35,50" fill="#4ECDC4"/><polygon points="30,5 45,50 30,95 15,50" fill="#4ECDC4"/><polygon points="70,5 85,50 70,95 55,50" fill="#4ECDC4"/>` },
+];
+
+// =====================================================================
+// NAVIGATION
+// =====================================================================
+let currentScreen = 'homeScreen';
+let inMagicGame   = false;
+let inShapeGame   = false;
+
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  currentScreen = id;
+}
+function showMagicStart(){ showScreen('magicStartScreen'); }
+function showShapeStart(){ showScreen('shapeStartScreen'); }
+
+// =====================================================================
+// MODAL
+// =====================================================================
+function showExitModal(context){
+  const modal = document.getElementById('exitModal');
+  const btns  = document.getElementById('modalBtns');
+  const msg   = document.getElementById('modalMsg');
+  btns.innerHTML = '';
+  const isGameRunning = (context === 'magicGame' || context === 'shapeGame');
+  msg.textContent = isGameRunning ? '어떻게 하시겠습니까?' : '시작 화면으로 돌아가시겠습니까?';
+
+  if(isGameRunning){
+    addModalBtn(btns,'시작 화면으로','go-home',()=>{ hideModal(); showScreen('homeScreen'); });
+    addModalBtn(btns,'이전 화면으로','go-back',()=>{ hideModal(); if(context==='magicGame') showScreen('magicStartScreen'); else showScreen('shapeStartScreen'); });
+    addModalBtn(btns,'취소','cancel',hideModal);
+  } else {
+    addModalBtn(btns,'시작 화면으로','go-home',()=>{ hideModal(); showScreen('homeScreen'); });
+    addModalBtn(btns,'취소','cancel',hideModal);
+  }
+  modal.classList.add('show');
+}
+function addModalBtn(container,text,cls,fn){
+  const b=document.createElement('button');
+  b.className='modal-btn '+cls; b.textContent=text; b.onclick=fn;
+  container.appendChild(b);
+}
+function hideModal(){ document.getElementById('exitModal').classList.remove('show'); }
+
+// =====================================================================
+// MAGIC GAME
+// =====================================================================
+// combinationKey: sorted array of flipped card indices as string e.g. "0","0,1","1,2,3"
+// db: { [key]: { blue: count, red: count } }
+let magicDB    = {};
+let magicTurn  = 0;
+let flipped    = [false,false,false,false]; // which cards are face-up
+let donePressed= false;
+let predicted  = null; // 'blue' or 'red'
+
+// Card SVGs (front faces: 4 plant images using SVG illustration)
+const CARD_FRONTS = [
+  // Card 0: broad leaves
+  `<svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg">
+    <rect width="120" height="90" rx="8" fill="#eaf5e4"/>
+    <ellipse cx="40" cy="55" rx="22" ry="14" fill="#5a9e4a" transform="rotate(-30 40 55)"/>
+    <ellipse cx="60" cy="45" rx="22" ry="14" fill="#6ab858" transform="rotate(10 60 45)"/>
+    <ellipse cx="80" cy="55" rx="22" ry="14" fill="#4e8c3c" transform="rotate(30 80 55)"/>
+    <line x1="40" y1="55" x2="40" y2="75" stroke="#3a6e2c" stroke-width="2"/>
+    <line x1="60" y1="45" x2="60" y2="75" stroke="#3a6e2c" stroke-width="2"/>
+    <line x1="80" y1="55" x2="80" y2="75" stroke="#3a6e2c" stroke-width="2"/>
+  </svg>`,
+  // Card 1: fern
+  `<svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg">
+    <rect width="120" height="90" rx="8" fill="#eaf5e4"/>
+    <line x1="60" y1="80" x2="60" y2="20" stroke="#4a7c38" stroke-width="2.5"/>
+    ${[20,30,40,50,60].map(y=>`
+      <ellipse cx="${60-(60-y)*0.7}" cy="${y}" rx="14" ry="5" fill="#5a9e4a" transform="rotate(-20 ${60-(60-y)*0.7} ${y})"/>
+      <ellipse cx="${60+(60-y)*0.7}" cy="${y}" rx="14" ry="5" fill="#6ab858" transform="rotate(20 ${60+(60-y)*0.7} ${y})"/>
+    `).join('')}
+  </svg>`,
+  // Card 2: succulent / rosette
+  `<svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg">
+    <rect width="120" height="90" rx="8" fill="#eaf5e4"/>
+    <ellipse cx="60" cy="45" rx="28" ry="20" fill="#7ab84a"/>
+    <ellipse cx="60" cy="45" rx="20" ry="14" fill="#5a9e3a"/>
+    <ellipse cx="60" cy="45" rx="12" ry="8" fill="#4a8c2a"/>
+    <ellipse cx="60" cy="45" rx="6" ry="4" fill="#3a7c1a"/>
+    ${[0,60,120,180,240,300].map(a=>`<ellipse cx="${60+26*Math.cos(a*Math.PI/180)}" cy="${45+18*Math.sin(a*Math.PI/180)}" rx="10" ry="6" fill="#8ac85a" transform="rotate(${a} ${60+26*Math.cos(a*Math.PI/180)} ${45+18*Math.sin(a*Math.PI/180)})"/>`).join('')}
+  </svg>`,
+  // Card 3: grass / reeds
+  `<svg viewBox="0 0 120 90" xmlns="http://www.w3.org/2000/svg">
+    <rect width="120" height="90" rx="8" fill="#eaf5e4"/>
+    ${[30,45,55,65,75,90].map((x,i)=>`<line x1="${x}" y1="85" x2="${x+(i%2===0?-5:5)}" y2="${15+i*5}" stroke="#5a8a3a" stroke-width="${2.5-i*0.1}"/>`).join('')}
+  </svg>`,
+];
+
+function startMagicGame(){
+  magicTurn  = 0;
+  magicDB    = {};
+  flipped    = [false,false,false,false];
+  donePressed= false;
+  predicted  = null;
+  showScreen('magicGameScreen');
+  renderMagicTurn();
+}
+
+function renderMagicTurn(){
+  magicTurn++;
+  flipped    = [false,false,false,false];
+  donePressed= false;
+  predicted  = null;
+  document.getElementById('magicTurnLabel').textContent = magicTurn + '번째';
+  renderCards();
+  setDoneBtn(false);
+  setPotionChoices(false);
+  setPredictIcons(null);
+  document.getElementById('choicePrompt').textContent = '완료를 누르면 선택할 수 있습니다';
+}
+
+function renderCards(){
+  const grid = document.getElementById('cardsGrid');
+  grid.innerHTML = '';
+  for(let i=0;i<4;i++){
+    const card = document.createElement('div');
+    card.className = 'card' + (flipped[i]?' flipped':'');
+    card.id = 'card'+i;
+    if(flipped[i]){
+      card.innerHTML = `<div class="card-front card-flip">${CARD_FRONTS[i]}</div>`;
+    } else {
+      card.innerHTML = `<div class="card-back"><div class="card-back-inner"><div class="card-back-oval"></div></div></div>`;
+    }
+    if(!donePressed) card.onclick = ()=>flipCard(i);
+    grid.appendChild(card);
+  }
+}
+
+function flipCard(i){
+  if(donePressed) return;
+  flipped[i] = !flipped[i];
+  renderCards();
+  const anyFlipped = flipped.some(Boolean);
+  const allFlipped = flipped.every(Boolean);
+  setDoneBtn(anyFlipped && !allFlipped);
+}
+
+function setDoneBtn(enabled){
+  const btn = document.getElementById('doneBtn');
+  btn.classList.toggle('enabled', enabled);
+}
+
+function onDone(){
+  if(donePressed) return;
+  donePressed = true;
+  // Lock cards
+  renderCards();
+  // Predict
+  const key = getCombinationKey();
+  predicted  = predictPotion(key);
+  setPredictIcons(predicted);
+  setPotionChoices(true);
+  document.getElementById('choicePrompt').textContent = '결과를 선택하세요';
+}
+
+function getCombinationKey(){
+  return flipped.map((f,i)=>f?i:-1).filter(i=>i>=0).join(',');
+}
+
+function predictPotion(key){
+  const entry = magicDB[key];
+  if(!entry) return Math.random()<0.5 ? 'blue' : 'red';
+  const total = entry.blue + entry.red;
+  if(total === 0) return Math.random()<0.5 ? 'blue' : 'red';
+  return entry.blue >= entry.red ? 'blue' : 'red';
+}
+
+function setPredictIcons(which){
+  const blueEl = document.getElementById('predictBlue');
+  const redEl  = document.getElementById('predictRed');
+  blueEl.className = 'potion-icon' + (which==='blue' ? ' predicted blue' : '');
+  redEl.className  = 'potion-icon' + (which==='red'  ? ' predicted red'  : '');
+  // update opacity on inner svg
+  blueEl.querySelector('g').setAttribute('opacity', which==='blue'?'1':'0.4');
+  redEl.querySelector('g').setAttribute('opacity',  which==='red' ?'1':'0.4');
+}
+
+function setPotionChoices(enabled){
+  document.getElementById('choiceBlue').classList.toggle('enabled', enabled);
+  document.getElementById('choiceRed').classList.toggle('enabled',  enabled);
+}
+
+function onChoosePotion(color){
+  if(!donePressed) return;
+  // Record result
+  const key = getCombinationKey();
+  if(!magicDB[key]) magicDB[key] = {blue:0, red:0};
+  magicDB[key][color]++;
+  // Next turn
+  renderMagicTurn();
+}
+
+// =====================================================================
+// SHAPE GAME
+// =====================================================================
+let shapeRound   = 1;
+let shapeSeq     = [];
+let shapeUsed    = [];
+let shapeWaiting = false;
+
+function shapeMemSteps(){ return shapeRound===1?2:3; }
+function shapeCurStep() { return shapeSeq.length-1; }
+function shapeNeedAns() { return shapeSeq.length>0 && shapeCurStep()>=shapeMemSteps(); }
+
+function shapeComputeCorrect(){
+  if(!shapeNeedAns()) return null;
+  const cur  = shapeSeq[shapeCurStep()];
+  const two  = shapeSeq[shapeCurStep()-2];
+  if(shapeRound===1) return cur===two?'same_2':'diff';
+  const three= shapeSeq[shapeCurStep()-3];
+  if(cur===two)   return 'same_2';
+  if(cur===three) return 'same_3';
+  return 'diff';
+}
+
+function startShapeGame(r){
+  shapeRound=r; shapeSeq=[]; shapeUsed=[]; shapeWaiting=false;
+  showScreen('shapeGameScreen');
+  document.getElementById('roundLabel').textContent = r+'라운드';
+  document.getElementById('stepCounter').textContent='';
+  document.getElementById('currentShapeSVG').style.display='none';
+  document.getElementById('emptyHint').style.display='';
+  buildShapeSelector(); renderShapeChoices(); updateNextBtn();
+}
+
+function selectShape(id){
+  if(shapeWaiting) return;
+  shapeSeq.push(id);
+  if(!shapeUsed.includes(id)) shapeUsed.push(id);
+  shapeWaiting=true;
+  const shape=SHAPES.find(x=>x.id===id);
+  const svg=document.getElementById('currentShapeSVG');
+  svg.innerHTML=shape.svg; svg.style.display='';
+  document.getElementById('emptyHint').style.display='none';
+  const wrap=document.getElementById('currentShapeWrap');
+  wrap.classList.remove('shape-animate'); void wrap.offsetWidth; wrap.classList.add('shape-animate');
+  document.getElementById('stepCounter').textContent=shapeSeq.length+'번째';
+  buildShapeSelector(); renderShapeChoices(); updateNextBtn();
+}
+
+function shapeGoNext(){
+  shapeWaiting=false;
+  buildShapeSelector(); renderShapeChoices(); updateNextBtn();
+}
+
+function buildShapeSelector(){
+  const panel=document.getElementById('shapeSelector');
+  panel.innerHTML='';
+  const blocked=shapeWaiting;
+  if(shapeUsed.length<3){
+    const grid=document.createElement('div'); grid.className='shape-grid';
+    SHAPES.forEach(s=>{
+      const item=document.createElement('div');
+      item.className='shape-item'+(blocked?' blocked':'');
+      item.innerHTML=`<svg viewBox="0 0 100 100">${s.svg}</svg>`;
+      if(!blocked) item.onclick=()=>selectShape(s.id);
+      grid.appendChild(item);
+    });
+    panel.appendChild(grid);
+  } else {
+    const list=document.createElement('div'); list.className='mini-shape-list';
+    shapeUsed.forEach(id=>{
+      const s=SHAPES.find(x=>x.id===id);
+      const item=document.createElement('div');
+      item.className='mini-shape-item'+(blocked?' blocked':'');
+      item.innerHTML=`<svg viewBox="0 0 100 100">${s.svg}</svg>`;
+      if(!blocked) item.onclick=()=>selectShape(id);
+      list.appendChild(item);
+    });
+    panel.appendChild(list);
+  }
+}
+
+function renderShapeChoices(){
+  const panel=document.getElementById('rightPanel');
+  panel.innerHTML='';
+  const disabled=!shapeNeedAns();
+  const correctAns=shapeComputeCorrect();
+  const defs=shapeRound===1
+    ?[{key:'SPACE BAR',label:'다름',value:'diff'},{key:'←',label:'같음',value:'same_2'}]
+    :[{key:'SPACE BAR',label:'다름 (둘 다 아님)',value:'diff'},{key:'←',label:'같음 (2번째 전)',value:'same_2'},{key:'→',label:'같음 (3번째 전)',value:'same_3'}];
+  defs.forEach(c=>{
+    const div=document.createElement('div');
+    const isLit=shapeWaiting&&!disabled&&c.value===correctAns;
+    div.className='choice-item'+(disabled?' disabled':'')+(isLit?' lit':'');
+    div.innerHTML=`<div class="choice-key">${c.key}</div><div class="choice-label">${c.label}</div>`;
+    panel.appendChild(div);
+  });
+}
+
+function updateNextBtn(){
+  document.getElementById('nextBtn').classList.toggle('enabled',shapeWaiting);
+}
+</script>
+</body>
+</html>
